@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 
 export function Lotus({ className = "" }: { className?: string }) {
   return (
@@ -49,11 +51,164 @@ export function Section({ title, kicker, children }: { title: string; kicker?: s
   );
 }
 
+/** Full-width band — use tone="muted" for the soft secondary background. */
+export function SectionBand({
+  title,
+  kicker,
+  tone = "default",
+  children,
+}: {
+  title: string;
+  kicker?: string;
+  tone?: "default" | "muted";
+  children: ReactNode;
+}) {
+  const inner = <Section title={title} kicker={kicker}>{children}</Section>;
+  if (tone === "muted") return <section className="bg-secondary">{inner}</section>;
+  return inner;
+}
+
 export function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="devotee-card rounded-xl border border-border bg-card p-6 shadow-warm">
       <h3 className="text-xl text-accent">{title}</h3>
       <div className="mt-2 text-muted-foreground">{children}</div>
+    </div>
+  );
+}
+
+/** Responsive card grid used across pages. */
+export function CardGrid({
+  items,
+  columns = 3,
+}: {
+  items: { title: string; text?: string; when?: string; children?: ReactNode }[];
+  columns?: 2 | 3;
+}) {
+  const cols = columns === 2 ? "md:grid-cols-2" : "md:grid-cols-3";
+  return (
+    <div className={`grid gap-6 ${cols}`}>
+      {items.map((item) => (
+        <Card key={item.title} title={item.title}>
+          {item.when && <p className="text-sm font-medium text-accent">{item.when}</p>}
+          {item.text && <p className={item.when ? "mt-2" : undefined}>{item.text}</p>}
+          {item.children}
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+/** Name + time / value rows (aarti schedule, etc.). */
+export function ScheduleList({
+  items,
+  note,
+}: {
+  items: { name: string; time: string }[];
+  note?: string;
+}) {
+  return (
+    <>
+      <div className="grid gap-3 md:grid-cols-2">
+        {items.map((item) => (
+          <div key={item.name} className="flex items-center justify-between rounded-md border border-border bg-card px-5 py-4">
+            <span className="font-medium">{item.name}</span>
+            <span className="font-display text-2xl text-primary">{item.time}</span>
+          </div>
+        ))}
+      </div>
+      {note && <p className="mt-4 text-sm text-muted-foreground">{note}</p>}
+    </>
+  );
+}
+
+/** Simple photo gallery grid. */
+export function PhotoGrid({ images, alt }: { images: string[]; alt: string }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {images.map((src, i) => (
+        <img key={`${src}-${i}`} src={src} alt={alt} loading="lazy" className="h-72 w-full rounded-lg object-cover shadow-warm" />
+      ))}
+    </div>
+  );
+}
+
+/** Vertical timeline used on the heritage page. */
+export function TimelineList({ items }: { items: { title: string; text: string }[] }) {
+  return (
+    <ol className="relative space-y-8 border-l-2 border-gold pl-8">
+      {items.map((item) => (
+        <li key={item.title} className="relative">
+          <span className="absolute -left-[42px] top-1 h-5 w-5 rounded-full bg-sacred ring-4 ring-background" />
+          <h3 className="text-2xl font-semibold text-primary">{item.title}</h3>
+          <p className="mt-1 max-w-3xl text-muted-foreground">{item.text}</p>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Accent-bordered date / notice list. */
+export function DateList({ items }: { items: { name: string; date: string }[] }) {
+  return (
+    <div className="space-y-3">
+      {items.map((item) => (
+        <div key={item.name} className="rounded-md border-l-4 border-accent bg-card px-5 py-3">
+          <p className="font-medium">{item.name}</p>
+          <p className="text-sm text-muted-foreground">{item.date}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Bullet list with sacred markers. */
+export function PointList({ points }: { points: string[] }) {
+  return (
+    <ul className="space-y-2 text-muted-foreground">
+      {points.map((p) => (
+        <li key={p} className="flex gap-2">
+          <span className="text-accent">✦</span>
+          {p}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Centered status screen for 404 / error pages. */
+export function StatusPage({
+  code,
+  title,
+  text,
+  primaryLabel,
+  onPrimary,
+  secondaryLabel,
+}: {
+  code?: string;
+  title: string;
+  text: string;
+  primaryLabel: string;
+  onPrimary?: () => void;
+  secondaryLabel?: string;
+}) {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        {code && <h1 className="text-7xl font-bold text-foreground">{code}</h1>}
+        <h2 className={`${code ? "mt-4" : ""} text-xl font-semibold text-foreground`}>{title}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{text}</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {onPrimary ? (
+            <Button onClick={onPrimary}>{primaryLabel}</Button>
+          ) : (
+            <Button asChild><Link to="/">{primaryLabel}</Link></Button>
+          )}
+          {secondaryLabel && (
+            <Button asChild variant="outline"><Link to="/">{secondaryLabel}</Link></Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
